@@ -31,7 +31,7 @@ describe('DecksManager', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAlgorithm.createNewCard = vi.fn().mockImplementation((id, content) => ({
+    mockAlgorithm.createNewCard = vi.fn().mockImplementation((id, type, content) => ({
       id,
       type: CardType.BASIC,
       content,
@@ -134,8 +134,9 @@ describe('DecksManager', () => {
         content: { front: 'foo', back: 'foo' },
       } as SpacedRepetitionItem;
       decksManager.updateCardContent(deck.id, updatedCard);
-      expect(deck.cards['card1'].content.front).toBe('foo');
-      expect(deck.cards['card1'].content.back).toBe('foo');
+      const card1Content = deck.cards['card1'].content as { front: string; back: string };
+      expect(card1Content.front).toBe('foo');
+      expect(card1Content.back).toBe('foo');
     });
 
     it('should throw an error for non-existent card', async () => {
@@ -188,7 +189,7 @@ describe('DecksManager', () => {
     it('should reset all cards to NEW state when switching algorithms', async () => {
       const deck = await decksManager.create('Test Deck', 'Test Description');
 
-      const card1 = {
+      const card1: SpacedRepetitionItem = {
         id: 'card1',
         type: CardType.BASIC,
         content: { front: 'Hello', back: 'World' },
@@ -203,7 +204,7 @@ describe('DecksManager', () => {
         },
       };
 
-      const card2 = {
+      const card2: SpacedRepetitionItem = {
         id: 'card2',
         type: CardType.BASIC,
         content: { front: 'Foo', back: 'Bar' },
@@ -246,14 +247,16 @@ describe('DecksManager', () => {
       expect(resetCard2?.content).toEqual({ front: 'Foo', back: 'Bar' });
 
       expect(mockAlgorithm.createNewCard).toHaveBeenCalledTimes(2);
-      expect(mockAlgorithm.createNewCard).toHaveBeenCalledWith('card1', {
-        front: 'Hello',
-        back: 'World',
-      });
-      expect(mockAlgorithm.createNewCard).toHaveBeenCalledWith('card2', {
-        front: 'Foo',
-        back: 'Bar',
-      });
+      expect(mockAlgorithm.createNewCard).toHaveBeenCalledWith(
+        'card1',
+        CardType.BASIC,
+        { front: 'Hello', back: 'World' },
+      );
+      expect(mockAlgorithm.createNewCard).toHaveBeenCalledWith(
+        'card2',
+        CardType.BASIC,
+        { front: 'Foo', back: 'Bar' },
+      );
     });
 
     it('should call save method after resetting cards', async () => {

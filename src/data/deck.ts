@@ -44,7 +44,7 @@ export function jsonObjectToDeck(
         nextReviewDate: convertStringToDate(
           card.nextReviewDate as unknown as string,
         ),
-      };
+      } as SpacedRepetitionItem;
       return acc;
     },
     {} as Record<string, SpacedRepetitionItem>,

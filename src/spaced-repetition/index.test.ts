@@ -1,7 +1,9 @@
 import { vi, describe, expect, it, beforeEach } from 'vitest';
 import {
+  BasicCardContent,
   CardState,
   CardType,
+  MultipleChoiceContent,
   PerformanceResponse,
   SpacedRepetitionAlgorithm,
   SpacedRepetitionItem,
@@ -27,14 +29,15 @@ class TestAlgorithm extends SpacedRepetitionAlgorithm<unknown> {
   }
   createNewCard(
     id: string,
-    content: { front: string; back: string },
+    type: CardType,
+    content: BasicCardContent | MultipleChoiceContent,
   ): SpacedRepetitionItem {
     return {
       id,
-      content,
+      type: CardType.BASIC,
+      content: content as BasicCardContent,
       iteration: 0,
       state: CardState.NEW,
-      type: CardType.BASIC,
       metadata: {},
     };
   }

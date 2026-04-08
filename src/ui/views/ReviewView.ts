@@ -1,5 +1,6 @@
 import BetterRecallPlugin from 'src/main';
 import {
+  CardType,
   PerformanceResponse,
   SpacedRepetitionItem,
 } from 'src/spaced-repetition';
@@ -26,6 +27,7 @@ export class ReviewView extends RecallSubView {
 
   private answerButtonsBarEl: HTMLElement;
   private recallButtonsBarEl: HTMLElement;
+  private mcOptionsEl: HTMLElement | null = null;
 
   private cardFrontEl: HTMLElement;
   private dividerEl: HTMLElement;
@@ -60,6 +62,11 @@ export class ReviewView extends RecallSubView {
 
   private handleKeyInput(event: KeyboardEvent): void {
     if (this.state === ReviewState.FINISHED) {
+      return;
+    }
+
+    // Keyboard shortcuts are disabled during MC option selection.
+    if (this.mcOptionsEl) {
       return;
     }
 
@@ -169,6 +176,36 @@ export class ReviewView extends RecallSubView {
     button.onClick(() => this.handleResponse(performanceResponse));
   }
 
+  private renderMCOptions(item: SpacedRepetitionItem & { type: CardType.MULTIPLE_CHOICE }): void {
+    this.mcOptionsEl = this.contentEl.createDiv('better-recall-mc-options');
+    let answered = false;
+
+    item.content.options.forEach((option, index) => {
+      const button = new ButtonComponent(this.mcOptionsEl!);
+      button.buttonEl.addClass('better-recall-mc-option');
+      button.buttonEl.setText(`${String.fromCharCode(65 + index)}. ${option}`);
+      button.onClick(() => {
+        if (answered) return;
+        answered = true;
+
+        const isCorrect = index === item.content.correctIndex;
+
+        // Highlight all options.
+        this.mcOptionsEl!.querySelectorAll('button').forEach((btn, i) => {
+          if (i === item.content.correctIndex) {
+            btn.addClass('better-recall-mc-option--correct');
+          } else if (i === index && !isCorrect) {
+            btn.addClass('better-recall-mc-option--incorrect');
+          }
+        });
+
+        // Show recall buttons after selection.
+        this.answerButtonsBarEl.addClass('better-recall--display-none');
+        this.renderRecallButtons();
+      });
+    });
+  }
+
   private showRecallButtons(): void {
     this.cardBackEl.removeClass('better-recall--display-none');
     this.dividerEl.removeClass('better-recall--display-none');
@@ -179,6 +216,10 @@ export class ReviewView extends RecallSubView {
   private showNextItem(): void {
     if (this.recallButtonsBarEl) {
       this.recallButtonsBarEl.remove();
+    }
+    if (this.mcOptionsEl) {
+      this.mcOptionsEl.remove();
+      this.mcOptionsEl = null;
     }
 
     this.answerButtonsBarEl.removeClass('better-recall--display-none');
@@ -200,13 +241,20 @@ export class ReviewView extends RecallSubView {
         this.vaultRootPath,
         this.plugin,
       );
-      MarkdownRenderer.render(
-        this.plugin.app,
-        this.currentItem.content.back,
-        this.cardBackEl,
-        this.vaultRootPath,
-        this.plugin,
-      );
+
+      if (this.currentItem.type === CardType.MULTIPLE_CHOICE) {
+        this.showAnswerButton.buttonEl.hide();
+        this.renderMCOptions(this.currentItem);
+      } else {
+        this.showAnswerButton.buttonEl.show();
+        MarkdownRenderer.render(
+          this.plugin.app,
+          this.currentItem.content.back,
+          this.cardBackEl,
+          this.vaultRootPath,
+          this.plugin,
+        );
+      }
 
       // Event listeners are deactivated for internal links.
       this.cardFrontEl.querySelectorAll('a.internal-link').forEach((link) => {

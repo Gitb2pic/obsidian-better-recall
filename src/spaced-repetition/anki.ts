@@ -1,7 +1,9 @@
 import { AnkiParameters, DEFAULT_SETTINGS } from '../settings/data';
 import {
+  BasicCardContent,
   CardState,
   CardType,
+  MultipleChoiceContent,
   PerformanceResponse,
   SpacedRepetitionAlgorithm,
   SpacedRepetitionItem,
@@ -23,11 +25,12 @@ export class AnkiAlgorithm extends SpacedRepetitionAlgorithm<AnkiParameters> {
 
   public createNewCard(
     id: string,
-    content: { front: string; back: string },
+    type: CardType,
+    content: BasicCardContent | MultipleChoiceContent,
   ): SpacedRepetitionItem {
-    const item: SpacedRepetitionItem = {
+    const item = {
       id,
-      type: CardType.BASIC,
+      type,
       content,
       state: CardState.NEW,
       iteration: 0,
@@ -36,7 +39,7 @@ export class AnkiAlgorithm extends SpacedRepetitionAlgorithm<AnkiParameters> {
         interval: 0,
         stepIndex: 0,
       },
-    };
+    } as SpacedRepetitionItem;
 
     this.scheduleReview(item);
     return item;

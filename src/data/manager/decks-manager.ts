@@ -105,6 +105,7 @@ export class DecksManager {
       Object.values(deck.cards).forEach((card) => {
         const reinitializedCard = this.algorithm.createNewCard(
           card.id,
+          card.type,
           card.content,
         );
 

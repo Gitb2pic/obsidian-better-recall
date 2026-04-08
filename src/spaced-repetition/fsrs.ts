@@ -8,12 +8,15 @@ import {
   createEmptyCard,
 } from 'ts-fsrs';
 import {
+  BasicCardContent,
   CardState,
   CardType,
+  MultipleChoiceContent,
   PerformanceResponse,
   SpacedRepetitionAlgorithm,
   SpacedRepetitionItem,
 } from '.';
+import { logger } from '../logger';
 
 type FSRSRating = Exclude<Rating, Rating.Manual>;
 
@@ -40,19 +43,20 @@ export class FSRSAlgorithm extends SpacedRepetitionAlgorithm<FSRSParameters> {
 
   public createNewCard(
     id: string,
-    content: { front: string; back: string },
+    type: CardType,
+    content: BasicCardContent | MultipleChoiceContent,
   ): SpacedRepetitionItem {
     const now = new Date();
     const fsrsCard = createEmptyCard<FSRSCard>(now);
 
-    const item: SpacedRepetitionItem = {
+    const item = {
       id,
-      type: CardType.BASIC,
+      type,
       content,
       state: CardState.NEW,
       iteration: 0,
       metadata: {}, // will be filled by syncFromFSRSCard
-    };
+    } as SpacedRepetitionItem;
 
     this.cardMap.set(id, fsrsCard);
     this.syncFromFSRSCard(item, fsrsCard);
@@ -78,7 +82,7 @@ export class FSRSAlgorithm extends SpacedRepetitionAlgorithm<FSRSParameters> {
   ): void {
     const fsrsCard = this.cardMap.get(item.id);
     if (!fsrsCard) {
-      console.warn(`FSRS card not found for item ${item.id}...`);
+      logger.warn(`FSRS card not found for item ${item.id}...`);
       return;
     }
 

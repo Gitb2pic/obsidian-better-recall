@@ -1,5 +1,6 @@
 import { Plugin } from 'obsidian';
 import { registerCommands } from './commands';
+import { logger } from './logger';
 import {
   BetterRecallData,
   BetterRecallSettings,
@@ -26,7 +27,7 @@ export default class BetterRecallPlugin extends Plugin {
   private eventEmitter: EventEmitter;
 
   async onload() {
-    console.log('loading better recall');
+    logger.log('loading better recall');
     this.eventEmitter = new EventEmitter();
 
     await this.loadPluginData();
@@ -45,7 +46,7 @@ export default class BetterRecallPlugin extends Plugin {
   }
 
   onunload() {
-    console.log('unloading better recall');
+    logger.log('unloading better recall');
   }
 
   /**

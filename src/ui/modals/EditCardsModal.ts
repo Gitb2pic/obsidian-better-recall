@@ -6,6 +6,7 @@ import { Deck } from 'src/data/deck';
 import { AddCardModal } from './card-modal/AddCardModal';
 import { EditCardModal } from './card-modal/EditCardModal';
 import { CARDS_LIST_EMPTY_DECK } from '../classes';
+import { CardType, SpacedRepetitionItem } from 'src/spaced-repetition';
 
 const cardAttributes = {
   cardId: 'data-card-id',
@@ -79,7 +80,7 @@ export class EditCardsModal extends Modal {
     if (this.deck.cardsArray.length > 0) {
       this.deck.cardsArray.forEach((card) => {
         const cardEl = decksCardEl.createEl('div', {
-          text: `${card.content.front} :: ${card.content.back}`,
+          text: getCardDisplayText(card),
           attr: {
             [cardAttributes.cardId]: card.id,
           },
@@ -117,4 +118,14 @@ export class EditCardsModal extends Modal {
     this.plugin.decksManager.save();
     this.contentEl.empty();
   }
+}
+
+function getCardDisplayText(card: SpacedRepetitionItem): string {
+  if (card.type === CardType.MULTIPLE_CHOICE) {
+    const optionsPreview = card.content.options
+      .map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`)
+      .join(' | ');
+    return `${card.content.front} :: [${optionsPreview}]`;
+  }
+  return `${card.content.front} :: ${card.content.back}`;
 }

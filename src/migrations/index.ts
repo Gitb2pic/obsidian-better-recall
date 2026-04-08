@@ -1,5 +1,6 @@
 import { BetterRecallData, CURRENT_SCHEMA_VERSION } from 'src/settings/data';
 import { migrateToV2 } from './v2-migration';
+import { logger } from 'src/logger';
 
 type Migration = (data: BetterRecallData) => void;
 
@@ -24,7 +25,7 @@ export function runMigrations(data: BetterRecallData): boolean {
       continue;
     }
 
-    console.log(`BetterRecall: migrating schema ${target - 1} -> ${target}`);
+    logger.log(`migrating schema ${target - 1} -> ${target}`);
     migration(data);
     data.schemaVersion = target;
     migrated = true;

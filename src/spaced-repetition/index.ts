@@ -14,7 +14,15 @@ export enum CardState {
 
 export enum CardType {
   BASIC,
+  MULTIPLE_CHOICE,
 }
+
+export type BasicCardContent = { front: string; back: string };
+export type MultipleChoiceContent = {
+  front: string;
+  options: string[];
+  correctIndex: number;
+};
 
 export interface ISpacedRepetitionItem {
   id: string;
@@ -29,13 +37,17 @@ export interface ISpacedRepetitionItem {
 
 export interface BasicSpacedRepetitionItem extends ISpacedRepetitionItem {
   type: CardType.BASIC;
-  content: {
-    front: string;
-    back: string;
-  };
+  content: BasicCardContent;
 }
 
-export type SpacedRepetitionItem = BasicSpacedRepetitionItem;
+export interface MultipleChoiceSpacedRepetitionItem extends ISpacedRepetitionItem {
+  type: CardType.MULTIPLE_CHOICE;
+  content: MultipleChoiceContent;
+}
+
+export type SpacedRepetitionItem =
+  | BasicSpacedRepetitionItem
+  | MultipleChoiceSpacedRepetitionItem;
 
 export abstract class SpacedRepetitionAlgorithm<T> {
   protected items: SpacedRepetitionItem[];
@@ -121,12 +133,14 @@ export abstract class SpacedRepetitionAlgorithm<T> {
   /**
    * Creates a new card with proper initialization for the algorithm.
    * @param id The unique identifier for the card.
-   * @param content The card content (front/back for basic cards).
+   * @param type The card type (basic or multiple choice).
+   * @param content The card content matching the given type.
    * @returns A new SpacedRepetitionItem properly initialized for the algorithm.
    */
   public abstract createNewCard(
     id: string,
-    content: { front: string; back: string },
+    type: CardType,
+    content: BasicCardContent | MultipleChoiceContent,
   ): SpacedRepetitionItem;
 
   public addItem(item: SpacedRepetitionItem): void {
